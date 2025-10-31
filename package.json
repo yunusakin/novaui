@@ -11,10 +11,14 @@
     "lint": "eslint .",
     "format": "prettier --check .",
     "preview": "vite preview",
-    "docker:dev": "docker compose -f environments/dev/docker-compose.yml --env-file environments/dev/.env.development up --build",
-    "docker:test": "docker compose -f environments/test/docker-compose.yml --env-file environments/test/.env.test up --build",
-    "docker:preprod": "docker compose -f environments/preprod/docker-compose.yml --env-file environments/preprod/.env.preprod up --build",
-    "docker:prod": "docker compose -f environments/prod/docker-compose.yml --env-file environments/prod/.env.production up --build"
+    "docker:dev:start": "docker compose -f environments/dev/docker-compose.yml --env-file environments/dev/.env.development up --build",
+    "docker:dev:stop": "docker compose -f environments/dev/docker-compose.yml --env-file environments/dev/.env.development down",
+    "docker:test:start": "docker compose -f environments/test/docker-compose.yml --env-file environments/test/.env.test up --build",
+    "docker:test:stop": "docker compose -f environments/test/docker-compose.yml --env-file environments/test/.env.test down",
+    "docker:preprod:start": "docker compose -f environments/preprod/docker-compose.yml --env-file environments/preprod/.env.preprod up --build",
+    "docker:preprod:stop": "docker compose -f environments/preprod/docker-compose.yml --env-file environments/preprod/.env.preprod down",
+    "docker:prod:start": "docker compose -f environments/prod/docker-compose.yml --env-file environments/prod/.env.production up --build",
+    "docker:prod:stop": "docker compose -f environments/prod/docker-compose.yml --env-file environments/prod/.env.production down"
   },
   "dependencies": {
     "axios": "^1.7.9",
