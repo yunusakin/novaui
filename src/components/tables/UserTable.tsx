@@ -5,9 +5,16 @@ import { LoadingState } from '@/components/shared/LoadingState'
 type UserTableProps = {
   items: User[]
   isLoading?: boolean
+  onDelete?: (user: User) => void
+  isMutating?: boolean
 }
 
-export const UserTable = ({ items, isLoading = false }: UserTableProps) => {
+export const UserTable = ({
+  items,
+  isLoading = false,
+  onDelete,
+  isMutating = false,
+}: UserTableProps) => {
   if (isLoading) {
     return <LoadingState message="Fetching users…" />
   }
@@ -30,6 +37,7 @@ export const UserTable = ({ items, isLoading = false }: UserTableProps) => {
             <th className="px-4 py-3 font-semibold">Email</th>
             <th className="px-4 py-3 font-semibold">Role</th>
             <th className="px-4 py-3 font-semibold">Joined</th>
+            {onDelete ? <th className="px-4 py-3 font-semibold">Actions</th> : null}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -45,6 +53,18 @@ export const UserTable = ({ items, isLoading = false }: UserTableProps) => {
               <td className="px-4 py-3 text-slate-500">
                 {new Date(user.createdAt).toLocaleDateString()}
               </td>
+              {onDelete ? (
+                <td className="px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={() => onDelete(user)}
+                    disabled={isMutating}
+                    className="rounded-md border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Delete
+                  </button>
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>

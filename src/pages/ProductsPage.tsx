@@ -16,6 +16,7 @@ export const ProductsPage = () => {
     createProduct,
     updateProduct,
     deleteProduct,
+    error,
   } = useNovaStore((state) => ({
     products: state.products,
     loading: state.loading.products,
@@ -24,6 +25,7 @@ export const ProductsPage = () => {
     createProduct: state.createProduct,
     updateProduct: state.updateProduct,
     deleteProduct: state.deleteProduct,
+    error: state.errors.products,
   }))
 
   const toast = useToast()
@@ -39,6 +41,10 @@ export const ProductsPage = () => {
       void fetchProducts()
     }
   }, [products.length, fetchProducts])
+
+  const handleRetry = () => {
+    void fetchProducts()
+  }
 
   const handleSubmit = async (payload: Parameters<typeof createProduct>[0]) => {
     setErrorMessage(null)
@@ -138,6 +144,18 @@ export const ProductsPage = () => {
       </Card>
 
       <Card title="Products" description="Current inventory list">
+        {error ? (
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="inline-flex items-center rounded border border-rose-300 px-2 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+            >
+              Retry
+            </button>
+          </div>
+        ) : null}
         <ProductTable
           items={products}
           isLoading={loading}

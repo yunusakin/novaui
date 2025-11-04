@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios'
 import { appEnv } from '@/config/env'
+import { useAuthStore } from '@/store/authStore'
 import type { ApiError, ApiResponse } from '@/types/common'
 
 const defaultHeaders = {
@@ -22,6 +23,15 @@ const mapError = (error: AxiosError<ApiResponse<unknown>>): ApiError => {
 }
 
 const attachInterceptors = (instance: AxiosInstance): AxiosInstance => {
+  instance.interceptors.request.use((config) => {
+    const token = useAuthStore.getState().token
+    if (token) {
+      config.headers = config.headers ?? {}
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  })
+
   instance.interceptors.response.use(
     (response) => response,
     (error: AxiosError<ApiResponse<unknown>>) => Promise.reject(mapError(error)),

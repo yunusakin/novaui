@@ -1,13 +1,16 @@
+name: novaui
+
 services:
   frontend:
-    container_name: novaui
+    container_name: novaui-prod
+    image: novaui-prod:latest
     build:
-      context: .
+      context: ../..
       dockerfile: Dockerfile
     ports:
       - "3000:80"
     env_file:
-      - ./.env.production
+      - ./.env.prod
     environment:
       - NODE_ENV=production
     restart: unless-stopped

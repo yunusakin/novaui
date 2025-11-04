@@ -1,6 +1,9 @@
+name: novaui
+
 services:
   frontend:
     container_name: novaui-dev
+    image: novaui-dev:latest
     build:
       context: ../..
       dockerfile: Dockerfile.dev

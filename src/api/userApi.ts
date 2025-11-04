@@ -13,6 +13,10 @@ export const userApi = {
     const { data } = await userClient.post<ApiResponse<User>>(basePath, payload)
     return data
   },
+  async remove(id: string): Promise<ApiResponse<null>> {
+    const { data } = await userClient.delete<ApiResponse<null>>(`${basePath}${id}`)
+    return data
+  },
 }
 
 export type UserApi = typeof userApi

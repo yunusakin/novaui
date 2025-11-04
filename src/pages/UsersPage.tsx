@@ -5,15 +5,18 @@ import { UserTable } from '@/components/tables/UserTable'
 import { useNovaStore } from '@/store/novaStore'
 import { useToast } from '@/hooks/useToast'
 import type { ApiError } from '@/types/common'
+import type { User } from '@/types/user'
 
 export const UsersPage = () => {
-  const { users, loading, mutations, fetchUsers, createUser } = useNovaStore(
+  const { users, loading, mutations, fetchUsers, createUser, deleteUser, error } = useNovaStore(
     (state) => ({
       users: state.users,
       loading: state.loading.users,
+      error: state.errors.users,
       mutations: state.mutations.user,
       fetchUsers: state.fetchUsers,
       createUser: state.createUser,
+      deleteUser: state.deleteUser,
     }),
   )
   const toast = useToast()
@@ -28,6 +31,29 @@ export const UsersPage = () => {
       void fetchUsers()
     }
   }, [users.length, fetchUsers])
+
+  const handleRetry = () => {
+    void fetchUsers()
+  }
+
+  const handleDelete = async (user: User) => {
+    const confirmDeletion = window.confirm(
+      `Delete ${user.name}? This action cannot be undone.`,
+    )
+    if (!confirmDeletion) return
+
+    try {
+      const response = await deleteUser(user.id)
+      if (!response.success) {
+        toast.error('Unable to delete user', response.message)
+        return
+      }
+      toast.success('User deleted', response.message)
+    } catch (error) {
+      const apiError = error as ApiError
+      toast.error('User deletion failed', apiError.message)
+    }
+  }
 
   const handleSubmit = async (payload: Parameters<typeof createUser>[0]) => {
     setErrorMessage(null)
@@ -67,7 +93,24 @@ export const UsersPage = () => {
         title="Users"
         description="Manage all users connected to the Nova platform"
       >
-        <UserTable items={users} isLoading={loading} />
+        {error ? (
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="inline-flex items-center rounded border border-rose-300 px-2 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+            >
+              Retry
+            </button>
+          </div>
+        ) : null}
+        <UserTable
+          items={users}
+          isLoading={loading}
+          onDelete={handleDelete}
+          isMutating={mutations}
+        />
       </Card>
     </div>
   )

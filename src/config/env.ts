@@ -1,4 +1,10 @@
-type EnvKey = 'VITE_ENV' | 'VITE_USER_API' | 'VITE_PRODUCT_API' | 'VITE_ORDER_API'
+type EnvKey =
+  | 'VITE_ENV'
+  | 'VITE_USER_API'
+  | 'VITE_PRODUCT_API'
+  | 'VITE_ORDER_API'
+  | 'VITE_AUTH_API'
+  | 'VITE_AUTH_TOKEN_KEY'
 
 const readEnv = (key: EnvKey, fallback?: string): string => {
   const value = import.meta.env[key] as string | undefined
@@ -18,6 +24,8 @@ export const appEnv = {
   userApi: readEnv('VITE_USER_API'),
   productApi: readEnv('VITE_PRODUCT_API'),
   orderApi: readEnv('VITE_ORDER_API'),
+  authApi: readEnv('VITE_AUTH_API'),
+  authTokenKey: readEnv('VITE_AUTH_TOKEN_KEY'),
 } as const
 
 export type AppEnv = typeof appEnv

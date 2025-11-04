@@ -26,12 +26,16 @@ const aggregateOrdersByDate = (orders: ReturnType<typeof useNovaStore.getState>[
 }
 
 export const DashboardPage = () => {
-  const { users, products, orders, loading } = useNovaStore((state) => ({
-    users: state.users,
-    products: state.products,
-    orders: state.orders,
-    loading: state.loading,
-  }))
+  const { users, products, orders, loading, errors, refreshAll } = useNovaStore(
+    (state) => ({
+      users: state.users,
+      products: state.products,
+      orders: state.orders,
+      loading: state.loading,
+      errors: state.errors,
+      refreshAll: state.refreshAll,
+    }),
+  )
 
   const lowStockProducts = useMemo(
     () => products.filter((product) => product.stock <= 5),
@@ -47,6 +51,17 @@ export const DashboardPage = () => {
   const recentOrders = useMemo(() => orders.slice(0, 5), [orders])
 
   const isLoading = loading.users || loading.products || loading.orders
+  const errorEntries = useMemo(
+    () =>
+      Object.entries(errors).filter(
+        (entry): entry is [keyof typeof errors, string] => Boolean(entry[1]),
+      ),
+    [errors],
+  )
+
+  const handleRetry = () => {
+    void refreshAll()
+  }
 
   if (isLoading && !users.length && !products.length && !orders.length) {
     return <LoadingState message="Preparing analytics…" />
@@ -54,6 +69,26 @@ export const DashboardPage = () => {
 
   return (
     <div className="space-y-6">
+      {errorEntries.length ? (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
+          <div className="mb-2 font-semibold">Service issues detected</div>
+          <ul className="list-disc space-y-1 pl-5">
+            {errorEntries.map(([key, message]) => (
+              <li key={key} className="capitalize">
+                {key}: {message}
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={handleRetry}
+            className="mt-3 inline-flex items-center rounded border border-rose-300 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+          >
+            Retry sync
+          </button>
+        </div>
+      ) : null}
+
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Users"

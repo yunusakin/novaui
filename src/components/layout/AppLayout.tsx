@@ -1,18 +1,32 @@
 import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { useNovaStore } from '@/store/novaStore'
+import { useAuthStore } from '@/store/authStore'
 import { ToastViewport } from '@/components/feedback/ToastViewport'
 import { navigationItems } from '@/constants/navigation'
 import { Navbar } from './Navbar'
 import { Sidebar } from './Sidebar'
+import { LogoutButton } from '@/components/auth/LogoutButton'
 
 export const AppLayout = () => {
   const refreshAll = useNovaStore((state) => state.refreshAll)
+  const fetchOrders = useNovaStore((state) => state.fetchOrders)
+  const user = useAuthStore((state) => state.user)
+  const role = user?.role
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
   useEffect(() => {
+    if (!role) return
+    if (role === 'COURIER') {
+      void fetchOrders()
+      return
+    }
     void refreshAll()
-  }, [refreshAll])
+  }, [refreshAll, fetchOrders, role])
+
+  const allowedItems = navigationItems.filter(
+    (item) => !item.roles || (role && item.roles.includes(role)),
+  )
 
   return (
     <>
@@ -67,7 +81,7 @@ export const AppLayout = () => {
               </button>
             </div>
             <nav className="space-y-1">
-              {navigationItems.map((item) => (
+              {allowedItems.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
@@ -78,6 +92,13 @@ export const AppLayout = () => {
                 </Link>
               ))}
             </nav>
+            <div className="mt-6 border-t border-slate-200 pt-4">
+              <div className="mb-3 text-sm">
+                <p className="font-semibold text-slate-900">{user?.name}</p>
+                <p className="text-xs uppercase text-slate-500">{role ?? 'GUEST'}</p>
+              </div>
+              <LogoutButton onComplete={() => setIsMobileNavOpen(false)} />
+            </div>
           </aside>
         </div>
       ) : null}

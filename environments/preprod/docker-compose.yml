@@ -1,11 +1,14 @@
+name: novaui
+
 services:
   frontend:
     container_name: novaui-preprod
+    image: novaui-preprod:latest
     build:
-      context: .
+      context: ../..
       dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - "3002:80"
     env_file:
       - ./.env.preprod
     environment:
