@@ -173,7 +173,9 @@ export const useNovaStore = create<NovaStore>((set, get) => ({
     setMutation(set, 'user', true)
     try {
       const response = await userApi.create(payload)
-      set((state) => ({ users: [...state.users, response.data] }))
+      if (response.success) {
+        set((state) => ({ users: [...state.users, response.data] }))
+      }
       return response
     } finally {
       setMutation(set, 'user', false)
@@ -183,9 +185,11 @@ export const useNovaStore = create<NovaStore>((set, get) => ({
     setMutation(set, 'user', true)
     try {
       const response = await userApi.remove(id)
-      set((state) => ({
-        users: state.users.filter((user) => user.id !== id),
-      }))
+      if (response.success) {
+        set((state) => ({
+          users: state.users.filter((user) => user.id !== id),
+        }))
+      }
       return response
     } finally {
       setMutation(set, 'user', false)
@@ -195,7 +199,9 @@ export const useNovaStore = create<NovaStore>((set, get) => ({
     setMutation(set, 'product', true)
     try {
       const response = await productApi.create(payload)
-      set((state) => ({ products: [...state.products, response.data] }))
+      if (response.success) {
+        set((state) => ({ products: [...state.products, response.data] }))
+      }
       return response
     } finally {
       setMutation(set, 'product', false)
@@ -205,11 +211,13 @@ export const useNovaStore = create<NovaStore>((set, get) => ({
     setMutation(set, 'product', true)
     try {
       const response = await productApi.update(id, payload)
-      set((state) => ({
-        products: state.products.map((product) =>
-          product.id === id ? response.data : product,
-        ),
-      }))
+      if (response.success) {
+        set((state) => ({
+          products: state.products.map((product) =>
+            product.id === id ? response.data : product,
+          ),
+        }))
+      }
       return response
     } finally {
       setMutation(set, 'product', false)
@@ -219,9 +227,11 @@ export const useNovaStore = create<NovaStore>((set, get) => ({
     setMutation(set, 'product', true)
     try {
       const response = await productApi.remove(id)
-      set((state) => ({
-        products: state.products.filter((product) => product.id !== id),
-      }))
+      if (response.success) {
+        set((state) => ({
+          products: state.products.filter((product) => product.id !== id),
+        }))
+      }
       return response
     } finally {
       setMutation(set, 'product', false)
@@ -231,7 +241,9 @@ export const useNovaStore = create<NovaStore>((set, get) => ({
     setMutation(set, 'order', true)
     try {
       const response = await orderApi.create(payload)
-      set((state) => ({ orders: [response.data, ...state.orders] }))
+      if (response.success) {
+        set((state) => ({ orders: [response.data, ...state.orders] }))
+      }
       return response
     } finally {
       setMutation(set, 'order', false)
@@ -241,11 +253,13 @@ export const useNovaStore = create<NovaStore>((set, get) => ({
     setMutation(set, 'order', true)
     try {
       const response = await orderApi.updateStatus(id, status)
-      set((state) => ({
-        orders: state.orders.map((order) =>
-          order.id === id ? response.data : order,
-        ),
-      }))
+      if (response.success) {
+        set((state) => ({
+          orders: state.orders.map((order) =>
+            order.id === id ? response.data : order,
+          ),
+        }))
+      }
       return response
     } finally {
       setMutation(set, 'order', false)

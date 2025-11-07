@@ -7,6 +7,8 @@ services:
     build:
       context: ../..
       dockerfile: Dockerfile
+      args:
+        BUILD_SCRIPT: build:preprod
     ports:
       - "3002:80"
     env_file:

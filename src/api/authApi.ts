@@ -50,7 +50,7 @@ export const authApi = {
       throw new Error('Invalid credentials provided.')
     }
 
-    const token = createMockToken(user)
+    const token = createMockToken(user, appEnv.authTokenSecret)
     return {
       token,
       user,

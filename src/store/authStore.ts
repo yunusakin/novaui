@@ -25,7 +25,7 @@ const mapPayloadToUser = (payload: AuthTokenPayload): AuthUser => ({
 
 const readStoredToken = () => {
   try {
-    return window.localStorage.getItem(appEnv.authTokenKey)
+    return window.sessionStorage.getItem(appEnv.authTokenKey)
   } catch {
     return null
   }
@@ -34,9 +34,9 @@ const readStoredToken = () => {
 const storeToken = (token: string | null) => {
   try {
     if (token) {
-      window.localStorage.setItem(appEnv.authTokenKey, token)
+      window.sessionStorage.setItem(appEnv.authTokenKey, token)
     } else {
-      window.localStorage.removeItem(appEnv.authTokenKey)
+      window.sessionStorage.removeItem(appEnv.authTokenKey)
     }
   } catch {
     // no-op in environments without storage access
@@ -90,7 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     const token = readStoredToken()
-    if (token && isTokenValid(token)) {
+    if (token && isTokenValid(token, appEnv.authTokenSecret)) {
       const payload = decodeToken(token)
       if (payload) {
         set({

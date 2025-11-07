@@ -1,3 +1,5 @@
+import HmacSHA256 from 'crypto-js/hmac-sha256'
+import encBase64 from 'crypto-js/enc-base64'
 import type { AuthTokenPayload, AuthUser } from '@/types/auth'
 
 const getBuffer = () => {
@@ -37,9 +39,25 @@ const base64Decode = (value: string) => {
   }
 }
 
+const timingSafeEqual = (a: string, b: string) => {
+  if (a.length !== b.length) return false
+  let mismatch = 0
+  for (let index = 0; index < a.length; index += 1) {
+    mismatch |= a.charCodeAt(index) ^ b.charCodeAt(index)
+  }
+  return mismatch === 0
+}
+
 const createJwtPart = (payload: unknown) => base64Encode(JSON.stringify(payload))
 
-export const createMockToken = (user: AuthUser, expiresInMinutes = 60) => {
+const signSegments = (header: string, body: string, secret: string) =>
+  HmacSHA256(`${header}.${body}`, secret).toString(encBase64)
+
+export const createMockToken = (
+  user: AuthUser,
+  secret: string,
+  expiresInMinutes = 60,
+) => {
   const header = { alg: 'HS256', typ: 'JWT' }
   const expiry = Date.now() + expiresInMinutes * 60 * 1000
   const body: AuthTokenPayload = {
@@ -50,7 +68,11 @@ export const createMockToken = (user: AuthUser, expiresInMinutes = 60) => {
     exp: expiry,
   }
 
-  return `${createJwtPart(header)}.${createJwtPart(body)}.mock-signature`
+  const headerPart = createJwtPart(header)
+  const payloadPart = createJwtPart(body)
+  const signature = signSegments(headerPart, payloadPart, secret)
+
+  return `${headerPart}.${payloadPart}.${signature}`
 }
 
 export const decodeToken = (token: string): AuthTokenPayload | null => {
@@ -67,8 +89,17 @@ export const decodeToken = (token: string): AuthTokenPayload | null => {
   }
 }
 
-export const isTokenValid = (token: string): boolean => {
-  const payload = decodeToken(token)
-  if (!payload) return false
-  return payload.exp > Date.now()
+export const isTokenValid = (token: string, secret: string): boolean => {
+  const [header, payload, signature] = token.split('.')
+  if (!header || !payload || !signature) return false
+
+  const payloadData = decodeToken(token)
+  if (!payloadData) return false
+
+  const expectedSignature = signSegments(header, payload, secret)
+  if (!timingSafeEqual(signature, expectedSignature)) {
+    return false
+  }
+
+  return payloadData.exp > Date.now()
 }
