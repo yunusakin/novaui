@@ -1,47 +1,44 @@
+import HmacSHA256 from 'crypto-js/hmac-sha256'
+import encBase64 from 'crypto-js/enc-base64'
+import encUtf8 from 'crypto-js/enc-utf8'
 import type { AuthTokenPayload, AuthUser } from '@/types/auth'
 
-const getBuffer = () => {
-  if (typeof globalThis === 'undefined') return undefined
-  const maybeBuffer = (globalThis as typeof globalThis & { Buffer?: typeof import('buffer').Buffer })
-    .Buffer
-  return maybeBuffer
-}
-
 const base64Encode = (value: string) => {
-  if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
-    return window.btoa(value)
-  }
-
-  const BufferCtor = getBuffer()
-  if (BufferCtor) {
-    return BufferCtor.from(value, 'utf-8').toString('base64')
-  }
-
-  throw new Error('Unable to encode value as base64.')
+  const words = encUtf8.parse(value)
+  return encBase64.stringify(words)
 }
 
 const base64Decode = (value: string) => {
   try {
-    if (typeof window !== 'undefined' && typeof window.atob === 'function') {
-      return window.atob(value)
-    }
-
-    const BufferCtor = getBuffer()
-    if (BufferCtor) {
-      return BufferCtor.from(value, 'base64').toString('utf-8')
-    }
-
-    return null
+    const words = encBase64.parse(value)
+    return encUtf8.stringify(words)
   } catch {
     return null
   }
 }
 
+const timingSafeEqual = (a: string, b: string) => {
+  if (a.length !== b.length) return false
+  let mismatch = 0
+  for (let index = 0; index < a.length; index += 1) {
+    mismatch |= a.charCodeAt(index) ^ b.charCodeAt(index)
+  }
+  return mismatch === 0
+}
+
 const createJwtPart = (payload: unknown) => base64Encode(JSON.stringify(payload))
 
-export const createMockToken = (user: AuthUser, expiresInMinutes = 60) => {
+const signSegments = (header: string, body: string, secret: string) =>
+  HmacSHA256(`${header}.${body}`, secret).toString(encBase64)
+
+export const createMockToken = (
+  user: AuthUser,
+  secret: string,
+  expiresInMinutes = 60,
+) => {
   const header = { alg: 'HS256', typ: 'JWT' }
-  const expiry = Date.now() + expiresInMinutes * 60 * 1000
+  // JWT exp claim should be in seconds, not milliseconds
+  const expiry = Math.floor(Date.now() / 1000) + expiresInMinutes * 60
   const body: AuthTokenPayload = {
     sub: user.id,
     name: user.name,
@@ -50,13 +47,14 @@ export const createMockToken = (user: AuthUser, expiresInMinutes = 60) => {
     exp: expiry,
   }
 
-  return `${createJwtPart(header)}.${createJwtPart(body)}.mock-signature`
+  const headerPart = createJwtPart(header)
+  const payloadPart = createJwtPart(body)
+  const signature = signSegments(headerPart, payloadPart, secret)
+
+  return `${headerPart}.${payloadPart}.${signature}`
 }
 
-export const decodeToken = (token: string): AuthTokenPayload | null => {
-  const [, payload] = token.split('.')
-  if (!payload) return null
-
+const parsePayload = (payload: string): AuthTokenPayload | null => {
   const decoded = base64Decode(payload)
   if (!decoded) return null
 
@@ -67,8 +65,25 @@ export const decodeToken = (token: string): AuthTokenPayload | null => {
   }
 }
 
-export const isTokenValid = (token: string): boolean => {
-  const payload = decodeToken(token)
-  if (!payload) return false
-  return payload.exp > Date.now()
+export const decodeToken = (token: string): AuthTokenPayload | null => {
+  const [, payload] = token.split('.')
+  if (!payload) return null
+
+  return parsePayload(payload)
+}
+
+export const isTokenValid = (token: string, secret: string): boolean => {
+  const [header, payload, signature] = token.split('.')
+  if (!header || !payload || !signature) return false
+
+  const payloadData = parsePayload(payload)
+  if (!payloadData) return false
+
+  const expectedSignature = signSegments(header, payload, secret)
+  if (!timingSafeEqual(signature, expectedSignature)) {
+    return false
+  }
+
+  // Compare against current time in seconds
+  return payloadData.exp > Math.floor(Date.now() / 1000)
 }

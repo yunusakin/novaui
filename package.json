@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:test": "tsc -b && vite build --mode test",
-    "build:prod": "npm run build",
+    "build:preprod": "tsc -b && vite build --mode preprod",
+    "build:prod": "tsc -b && vite build --mode production",
     "lint": "eslint .",
     "format": "prettier --check .",
     "preview": "vite preview",
@@ -22,6 +23,7 @@
   },
   "dependencies": {
     "axios": "^1.7.9",
+    "crypto-js": "^4.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^6.28.0",
@@ -30,6 +32,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^24.6.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",

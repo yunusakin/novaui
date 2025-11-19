@@ -90,7 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     const token = readStoredToken()
-    if (token && isTokenValid(token)) {
+    if (token && isTokenValid(token, appEnv.authTokenSecret)) {
       const payload = decodeToken(token)
       if (payload) {
         set({
