@@ -12,15 +12,11 @@ type ProtectedRouteProps = {
 
 export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   const location = useLocation()
-  const { user, isInitialized, isLoading, initialize, hasRole } = useAuthStore(
-    (state) => ({
-      user: state.user,
-      isInitialized: state.isInitialized,
-      isLoading: state.isLoading,
-      initialize: state.initialize,
-      hasRole: state.hasRole,
-    }),
-  )
+  const user = useAuthStore((state) => state.user)
+  const isInitialized = useAuthStore((state) => state.isInitialized)
+  const isLoading = useAuthStore((state) => state.isLoading)
+  const initialize = useAuthStore((state) => state.initialize)
+  const hasRole = useAuthStore((state) => state.hasRole)
 
   useEffect(() => {
     initialize()

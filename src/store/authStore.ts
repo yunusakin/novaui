@@ -25,7 +25,7 @@ const mapPayloadToUser = (payload: AuthTokenPayload): AuthUser => ({
 
 const readStoredToken = () => {
   try {
-    return window.sessionStorage.getItem(appEnv.authTokenKey)
+    return window.localStorage.getItem(appEnv.authTokenKey)
   } catch {
     return null
   }
@@ -34,9 +34,9 @@ const readStoredToken = () => {
 const storeToken = (token: string | null) => {
   try {
     if (token) {
-      window.sessionStorage.setItem(appEnv.authTokenKey, token)
+      window.localStorage.setItem(appEnv.authTokenKey, token)
     } else {
-      window.sessionStorage.removeItem(appEnv.authTokenKey)
+      window.localStorage.removeItem(appEnv.authTokenKey)
     }
   } catch {
     // no-op in environments without storage access

@@ -28,7 +28,7 @@ export const ProfilePage = () => {
           </div>
           <div>
             <dt className="text-xs uppercase tracking-wide text-slate-500">Token storage</dt>
-            <dd className="text-sm font-medium text-slate-900">Session storage (mock)</dd>
+            <dd className="text-sm font-medium text-slate-900">Local storage (mock)</dd>
           </div>
         </dl>
       </Card>
